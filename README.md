@@ -1,27 +1,25 @@
-# React + TypeScript + Vite
+# MSW 2.0 + Safari bug repro
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+We see an error in Safari only when returning a response with `null` body and status 204 from a MSW handler.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
+```
+FetchEvent.respondWith received an error: TypeError: Response cannot have a body with the given status.
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+To reproduce error:
+
+1. `npm install`
+1. `npm run dev`
+1. Go to http://localhost:5173 in Safari
+1. Open developer console
+1. Click `Hit endpoint` button
+1. See the above error in console
+
+This only seems to happen in Safari. Here is the WebKit code that throws this error. It looks like it should only throw if body is not null and the response code is 204. But when I log the response we're generating before the error happens (in the handler) I see that it is null.
+
+* https://github.com/WebKit/WebKit/blob/3e8a39cebd79433c45e1c4878fd017cd39545479/Source/WebCore/Modules/fetch/FetchResponse.cpp#L93-L97
+* https://opensource.apple.com/source/WebCore/WebCore-7603.3.8/Modules/fetch/FetchResponse.js.auto.html
+
+Here is a similar issue where the MSW devs justifiably say it looks like a Safari issue and there's not really anything they can do.
+
+* https://github.com/mswjs/msw/issues/1738
