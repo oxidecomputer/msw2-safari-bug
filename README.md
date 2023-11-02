@@ -1,5 +1,7 @@
 # MSW 2.0 + Safari bug repro
 
+**MSW issue:** https://github.com/mswjs/msw/issues/1827
+
 We see an error in Safari only when returning a response with `null` body and status 204 from a MSW handler.
 
 ```
