@@ -12,7 +12,6 @@ To reproduce error:
 1. `npm run dev`
 1. Go to http://localhost:5173 in Safari
 1. Open developer console
-1. Click `Hit endpoint` button
 1. See the above error in console
 
 This only seems to happen in Safari. Here is the WebKit code that throws this error. It looks like it should only throw if body is not null and the response code is 204. But when I log the response we're generating before the error happens (in the handler) I see that it is null.
